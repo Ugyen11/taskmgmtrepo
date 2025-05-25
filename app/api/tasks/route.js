@@ -1,56 +1,55 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { getTokenData } from '../../../lib/auth';
+import { prisma } from '@/lib/prisma';
+import { getTokenData } from '@/lib/auth';
 
-const prisma = new PrismaClient();
+export const runtime = 'edge';
 
-// GET /api/tasks - Get all tasks for the authenticated user
+// GET all tasks
 export async function GET(request) {
   try {
     const tokenData = await getTokenData(request);
     if (!tokenData) {
       return NextResponse.json(
-        { message: 'Unauthorized' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
     const tasks = await prisma.task.findMany({
       where: {
-        userId: tokenData.userId
+        userId: tokenData.userId,
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: 'desc',
+      },
     });
 
     return NextResponse.json(tasks);
   } catch (error) {
-    console.error('Get tasks error:', error);
+    console.error('Error fetching tasks:', error);
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
 
-// POST /api/tasks - Create a new task
+// CREATE a new task
 export async function POST(request) {
   try {
     const tokenData = await getTokenData(request);
     if (!tokenData) {
       return NextResponse.json(
-        { message: 'Unauthorized' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const { title, description, dueDate } = await request.json();
+    const { title, description, dueDate, priority } = await request.json();
 
-    // Validate input
     if (!title) {
       return NextResponse.json(
-        { message: 'Title is required' },
+        { error: 'Title is required' },
         { status: 400 }
       );
     }
@@ -59,16 +58,17 @@ export async function POST(request) {
       data: {
         title,
         description,
-        dueDate: dueDate ? new Date(dueDate) : null,
-        userId: tokenData.userId
-      }
+        dueDate,
+        priority,
+        userId: tokenData.userId,
+      },
     });
 
     return NextResponse.json(task, { status: 201 });
   } catch (error) {
-    console.error('Create task error:', error);
+    console.error('Error creating task:', error);
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
