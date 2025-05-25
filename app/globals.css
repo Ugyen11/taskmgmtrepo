@@ -2,41 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #f5f5f7;
-  --foreground: #1d1d1f;
-  --primary: #47a3ff;
-  --primary-foreground: #ffffff;
-  --secondary: #ffffff;
-  --secondary-foreground: #1d1d1f;
-  --accent: #faf5ff;
-  --accent-foreground: #6b46c1;
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
-  --card: #ffffff;
-  --card-foreground: #1d1d1f;
-  --border: #e5e7eb;
-  --input: #ffffff;
-  --ring: #e0f2fe;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #000000;
-    --foreground: #f5f5f7;
-    --primary: #0a84ff;
-    --primary-foreground: #ffffff;
-    --secondary: #1c1c1e;
-    --secondary-foreground: #f5f5f7;
-    --accent: #2d2d30;
-    --accent-foreground: #c7d2fe;
-    --muted: #2d2d30;
-    --muted-foreground: #a1a1a6;
-    --card: #1c1c1e;
-    --card-foreground: #f5f5f7;
-    --border: #2d2d30;
-    --input: #1c1c1e;
-    --ring: #0a84ff;
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 262.1 83.3% 57.8%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 210 20% 98%;
+    --card: 24 9.8% 10%;
+    --card-foreground: 210 20% 98%;
+    --popover: 24 9.8% 10%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 263.4 70% 50.4%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 263.4 70% 50.4%;
   }
 }
 
@@ -45,45 +54,69 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-background text-foreground;
   }
 }
 
-@layer components {
-  .container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+/* Custom animations */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
   }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
 
-  .btn {
-    @apply inline-flex items-center justify-center rounded-xl text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background px-4 py-2 shadow-sm hover:scale-105 active:scale-95;
-  }
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
 
-  .btn-primary {
-    @apply bg-primary text-primary-foreground shadow-lg;
-  }
+/* Glass effect styles */
+.glass {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-  .card {
-    @apply rounded-2xl border bg-card text-card-foreground shadow-sm backdrop-blur-sm bg-opacity-50;
-  }
+.dark .glass {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
 
-  .input {
-    @apply flex h-11 w-full rounded-xl border border-input bg-input px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 shadow-sm;
-  }
+/* Gradient text */
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-500;
+}
 
-  .task-item {
-    @apply flex items-center gap-3 p-4 rounded-xl hover:bg-accent transition-colors;
-  }
+/* Custom button styles */
+.btn-primary {
+  @apply px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium 
+  hover:opacity-90 transition-all duration-200 shadow-lg shadow-purple-500/20 
+  disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2;
+}
 
-  .checkbox {
-    @apply h-5 w-5 rounded-lg border-2 border-muted text-primary focus:ring-0 focus:ring-offset-0 checked:border-primary transition-colors;
-  }
+.btn-secondary {
+  @apply px-6 py-3 rounded-full bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium 
+  hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 shadow-lg 
+  disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700;
+}
 
-  .delete-btn {
-    @apply px-3 py-1.5 text-sm bg-destructive text-white rounded-xl transition-all hover:scale-105 active:scale-95 font-medium hover:opacity-90;
-  }
+/* Form styles */
+.form-input {
+  @apply w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 
+  bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200;
+}
 
-  .glass-card {
-    @apply bg-secondary bg-opacity-50 backdrop-blur-xl border border-secondary shadow-xl;
-  }
+.form-label {
+  @apply block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200;
+}
+
+/* Card styles */
+.card {
+  @apply bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl p-8 shadow-xl;
 }
