@@ -7,6 +7,13 @@ export const runtime = 'edge';
 
 export async function POST(request) {
   try {
+    if (!prisma) {
+      return NextResponse.json(
+        { error: 'Database connection not available' },
+        { status: 500 }
+      );
+    }
+
     const { email, password } = await request.json();
 
     if (!email || !password) {
@@ -17,14 +24,25 @@ export async function POST(request) {
     }
 
     // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        email: true,
-        password: true,
-      },
-    });
+    let user;
+    try {
+      user = await prisma.user.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          username: true,
+          password: true,
+        },
+      });
+    } catch (dbError) {
+      console.error('Database error:', dbError);
+      return NextResponse.json(
+        { error: 'Database error', details: dbError.message },
+        { status: 500 }
+      );
+    }
 
     if (!user) {
       return NextResponse.json(
@@ -42,18 +60,44 @@ export async function POST(request) {
       );
     }
 
+    if (!process.env.JWT_SECRET) {
+      return NextResponse.json(
+        { error: 'JWT configuration error' },
+        { status: 500 }
+      );
+    }
+
     // Generate JWT token
-    const token = await new SignJWT({ 
-      userId: user.id,
-      email: user.email 
-    })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setExpirationTime('24h')
-      .sign(new TextEncoder().encode(process.env.JWT_SECRET));
+    let token;
+    try {
+      token = await new SignJWT({ 
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+        username: user.username
+      })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setExpirationTime('24h')
+        .sign(new TextEncoder().encode(process.env.JWT_SECRET));
+    } catch (jwtError) {
+      console.error('JWT signing error:', jwtError);
+      return NextResponse.json(
+        { error: 'Authentication error', details: jwtError.message },
+        { status: 500 }
+      );
+    }
 
     // Create response with token cookie
     const response = NextResponse.json(
-      { message: 'Login successful' },
+      { 
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          username: user.username
+        }
+      },
       { status: 200 }
     );
 
@@ -70,7 +114,11 @@ export async function POST(request) {
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { 
+        error: 'Internal server error', 
+        details: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      },
       { status: 500 }
     );
   }
