@@ -6,16 +6,33 @@ export const runtime = 'edge';
 
 export async function POST(request) {
   try {
+    console.log('Registration attempt started');
+
     if (!prisma) {
+      console.error('Prisma client not initialized');
       return NextResponse.json(
         { error: 'Database connection not available' },
         { status: 500 }
       );
     }
 
-    const { email, password, name, username } = await request.json();
+    // Parse request body
+    let body;
+    try {
+      body = await request.json();
+    } catch (parseError) {
+      console.error('Request parsing error:', parseError);
+      return NextResponse.json(
+        { error: 'Invalid request format', details: parseError.message },
+        { status: 400 }
+      );
+    }
 
+    const { email, password, name, username } = body;
+
+    // Validate required fields
     if (!email || !password || !name || !username) {
+      console.log('Missing required fields');
       return NextResponse.json(
         { error: 'All fields are required: name, username, email, password' },
         { status: 400 }
@@ -25,11 +42,14 @@ export async function POST(request) {
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
+      console.log('Invalid email format:', email);
       return NextResponse.json(
         { error: 'Invalid email format' },
         { status: 400 }
       );
     }
+
+    console.log('Checking for existing user');
 
     // Check if user already exists (email or username)
     let existingUser;
@@ -42,8 +62,9 @@ export async function POST(request) {
           ]
         }
       });
+      console.log('Existing user check result:', existingUser ? 'User exists' : 'User not found');
     } catch (dbError) {
-      console.error('Database error:', dbError);
+      console.error('Database error during user check:', dbError);
       return NextResponse.json(
         { error: 'Database error', details: dbError.message },
         { status: 500 }
@@ -51,16 +72,20 @@ export async function POST(request) {
     }
 
     if (existingUser) {
+      console.log('User already exists:', existingUser.email === email ? 'Email taken' : 'Username taken');
       return NextResponse.json(
         { error: existingUser.email === email ? 'Email already exists' : 'Username already exists' },
         { status: 400 }
       );
     }
 
+    console.log('Hashing password');
+
     // Hash password
     let hashedPassword;
     try {
       hashedPassword = await hashPassword(password);
+      console.log('Password hashed successfully');
     } catch (hashError) {
       console.error('Password hashing error:', hashError);
       return NextResponse.json(
@@ -68,6 +93,8 @@ export async function POST(request) {
         { status: 500 }
       );
     }
+
+    console.log('Creating new user');
 
     // Create new user
     let user;
@@ -86,6 +113,7 @@ export async function POST(request) {
           email: true,
         },
       });
+      console.log('User created successfully:', user.id);
     } catch (createError) {
       console.error('User creation error:', createError);
       return NextResponse.json(
@@ -94,12 +122,14 @@ export async function POST(request) {
       );
     }
 
+    console.log('Registration completed successfully');
+
     return NextResponse.json(
       { message: 'User created successfully', user },
       { status: 201 }
     );
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('Unhandled registration error:', error);
     return NextResponse.json(
       { 
         error: 'Internal server error', 
