@@ -1,15 +1,18 @@
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
+export const runtime = 'edge';
+
 export async function POST() {
-  const cookieStore = cookies();
-  
-  // Clear the auth token
-  cookieStore.delete('token');
-  
-  // Return response with cleared cookie
   const response = NextResponse.json({ message: 'Logged out successfully' });
-  response.cookies.delete('token');
+  
+  // Clear the auth token with proper cookie settings
+  response.cookies.set('token', '', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+    maxAge: 0,
+    path: '/',
+  });
   
   return response;
 } 

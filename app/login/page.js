@@ -7,7 +7,7 @@ import Link from 'next/link';
 export default function LoginPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
   const [error, setError] = useState('');
@@ -63,14 +63,14 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium mb-1">
-              Username
+            <label htmlFor="email" className="block text-sm font-medium mb-1">
+              Email
             </label>
             <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
               onChange={handleChange}
               className="w-full p-2 rounded-md border border-input bg-background"
               required
